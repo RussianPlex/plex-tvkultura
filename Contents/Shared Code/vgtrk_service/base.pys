@@ -1,5 +1,6 @@
 import lxml
 import re
+from urlparse import urljoin, urlparse
 
 
 class ElementBase(object):
@@ -49,6 +50,16 @@ class ElementBase(object):
         html = HTML.StringFromElement(element).replace('<br', '\n<br')
         text = String.StripTags(html).strip().decode('utf-8')
         return re.sub('^\s+', '\n', text, flags=re.MULTILINE)
+
+    """
+        :type url: str
+        :rtype: str
+    """
+    def format_url(self, uri):
+        if uri[0:2] == '//':
+            # Prepend scheme from base URL.
+            return urlparse(self.base_url).scheme + ':' + uri
+        return urljoin(self.base_url, uri)
 
 
 class PageContent(ElementBase):

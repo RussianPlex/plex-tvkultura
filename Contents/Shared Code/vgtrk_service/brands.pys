@@ -20,7 +20,7 @@ class BrandElement(ElementBase):
 
     @property
     def href(self):
-        return urljoin(self.base_url, self.find_one(self.href_pattern).get('href'))
+        return self.format_url(self.find_one(self.href_pattern).get('href'))
 
     @property
     def schedule(self):
