@@ -38,8 +38,19 @@ class BrandElement(ElementBase):
 
 class BrandsListPage(PageElement):
 
-    list_pattern = "./div[@id='main']//div[contains(@class,'brand_list')]/div[contains(@class,'brand_item')]"
+    list_pattern = "./*[@id='main']//div[contains(@class,'brand_list')]/div[contains(@class,'brand_item')]"
 
     @property
     def list(self):
-        return [BrandElement(e, self.base_url) for e in self.content.find_all(self.list_pattern)]
+        return [self.create_element(BrandElement, e) for e in self.content.find_all(self.list_pattern)]
+
+
+class BrandPage(PageElement):
+
+    title_pattern = ".//*[@id='promo']//h1[contains(@class,'brand_title')]/a[contains(@class,'title')]"
+    video_link_pattern = ".//*[@id='promo']//ul[contains(@class,'brand_menu')]//a[contains(@class,'icon-brand-video')]"
+
+    @property
+    def video_href(self):
+        element = self.find_one(self.video_link_pattern, require=False)
+        return urljoin(self.base_url, element.get('href')) if element is not None else None

@@ -2,7 +2,7 @@
 from plex_test_case import PlexTestCase
 
 
-class VGTRKServiceTest(PlexTestCase):
+class BrandsTest(PlexTestCase):
 
     def test_brand_list(self):
         actual = self.vgtrk_service.brands.BrandsListPage(self.load_html('BrandList.htm'), '//tvkultura.ru')
@@ -22,6 +22,21 @@ class VGTRKServiceTest(PlexTestCase):
         self.networking.http_response_body = self.load_html('BrandList.htm')
         actual = self.shared_code.brand_menu('https://tvkultura.ru/brand/')
         self.assertEquals('BrandsListPage', actual.__class__.__name__)
+
+    def test_brand_featured_page(self):
+        actual = self.vgtrk_service.brands.BrandPage(self.load_html('BrandFeaturedPage.htm'), '//tvkultura.ru')
+        self.assertEquals(u'Щелкунчик. XVII Международный телевизионный конкурс юных музыкантов', actual.title)
+        self.assertEquals('//tvkultura.ru/video/show/brand_id/60346/', actual.video_href)
+
+    def test_brand_info_page(self):
+        actual = self.vgtrk_service.brands.BrandPage(self.load_html('BrandInfoPage.htm'), '//tvkultura.ru')
+        self.assertEquals("18th International Television Contest for Young Musicians 'The Nutcracker'", actual.title)
+        self.assertEquals(None, actual.video_href)
+
+    def brand_detail(self):
+        self.networking.http_response_body = self.load_html('BrandFeaturedPage.htm')
+        actual = self.shared_code.brand_menu('https://tvkultura.ru/brand/60346/')
+        self.assertEquals('BrandPage', actual.__class__.__name__)
 
     def load_html(self, filename):
         html = self.get_file_contents(filename)

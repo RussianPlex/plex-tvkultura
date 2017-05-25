@@ -7,6 +7,10 @@ CACHE_INTERVAL = 600
 REQUEST_PAUSE = .1
 
 
+def brand_detail(url):
+    return create_object(vgtrk_service.brands.BrandPage, url)
+
+
 def brand_menu(url):
     return create_object(vgtrk_service.brands.BrandsListPage, url)
 

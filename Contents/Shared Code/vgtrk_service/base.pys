@@ -14,6 +14,14 @@ class ElementBase(object):
         self.base_url = base_url
 
     """
+        :type ClassName: class
+        :type element: lxml.html.HtmlElement
+        :rtype: ElementBase
+    """
+    def create_element(self, ClassName, element):
+        return ClassName(element, self.base_url)
+
+    """
         :type pattern: str
         :rtype: list[lxml.html.HtmlElement]
     """
