@@ -13,7 +13,7 @@
 		<key>Brand</key>
 		<dict>
 			<key>Identifier</key>
-			<string>com.plexapp.plugins.tvkultura</string>
+			<string>com.plexapp.plugins.channel.tvkultura</string>
 		</dict>
 	</dict>
 	<key>PlexPluginCodePolicy</key>
