@@ -1,0 +1,28 @@
+from urllib2 import URLError
+from urlparse import urlparse
+import vgtrk_service
+
+
+CACHE_INTERVAL = 600
+REQUEST_PAUSE = .1
+
+
+def brand_menu(url):
+    return create_object(vgtrk_service.brands.BrandsListPage, url)
+
+
+def create_object(ClassReference, url):
+    return ClassReference(load_page(url), base_url(url))
+
+
+def base_url(url):
+    parsed_uri = urlparse(url)
+    return '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+
+
+def load_page(url, cache_time=CACHE_INTERVAL, sleep=REQUEST_PAUSE):
+    try:
+        return HTML.ElementFromURL(url, cacheTime=cache_time, sleep=sleep)
+    except URLError, e:
+        Log.Exception(str(e))
+        raise Ex.MediaNotAvailable

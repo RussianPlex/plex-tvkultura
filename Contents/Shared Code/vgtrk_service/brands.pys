@@ -1,0 +1,45 @@
+from base import ElementBase, PageElement
+from urlparse import urljoin
+
+
+class BrandElement(ElementBase):
+
+    about_pattern = ".//a[contains(@class,'about')]"
+    href_pattern = ".//a[contains(@class,'title')]"
+    schedule_pattern = ".//div[contains(@class,'scheldule')]/span[contains(@class,'day_active')]"  # Note a typo in 'schedule'
+    thumb_pattern = ".//div[contains(@class,'brand_pic')]//img"
+    title_pattern = ".//a[contains(@class,'title')]"
+
+    @property
+    def about(self):
+        return self.find_one(self.about_pattern).text.strip()
+
+    @property
+    def big_thumb(self):
+        return self.small_thumb.replace('/r/', '/b/')
+
+    @property
+    def href(self):
+        return urljoin(self.base_url, self.find_one(self.href_pattern).get('href'))
+
+    @property
+    def schedule(self):
+        elements = self.find_all(self.schedule_pattern)
+        return ', '.join([d.text.strip() for d in elements]) if len(elements) else None
+
+    @property
+    def small_thumb(self):
+        return self.find_one(self.thumb_pattern).get('src')
+
+    @property
+    def title(self):
+        return self.find_one(self.title_pattern).text.strip()
+
+
+class BrandsListPage(PageElement):
+
+    list_pattern = "./div[@id='main']//div[contains(@class,'brand_list')]/div[contains(@class,'brand_item')]"
+
+    @property
+    def list(self):
+        return [BrandElement(e, self.base_url) for e in self.content.find_all(self.list_pattern)]

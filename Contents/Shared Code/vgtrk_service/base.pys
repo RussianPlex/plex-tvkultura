@@ -1,0 +1,67 @@
+import lxml
+import re
+
+
+class ElementBase(object):
+    """
+        :type element: lxml.html.HtmlElement
+        :type base_url: str
+    """
+    def __init__(self, element, base_url=None):
+        if not isinstance(element, lxml.etree.ElementBase):
+            raise ValueError('The class only takes LXML element in the constructor argument.')
+        self.element = element
+        self.base_url = base_url
+
+    """
+        :type pattern: str
+        :rtype: list[lxml.html.HtmlElement]
+    """
+    def find_all(self, pattern):
+        return self.element.xpath(pattern)
+
+    """
+        :type pattern: str
+        :type name:    str
+        :type require: bool
+        :rtype: lxml.html.HtmlElement
+    """
+    def find_one(self, pattern, name='Element', require=True):
+        element = self.find_all(pattern)
+        if not len(element) and require:
+            raise KeyError('%s not found' % name)
+        elif len(element):
+            return element[0]
+
+    """
+        :type element: lxml.html.HtmlElement
+        :rtype: str
+    """
+    def format_text(self, element):
+        html = HTML.StringFromElement(element).replace('<br', '\n<br')
+        text = String.StripTags(html).strip().decode('utf-8')
+        return re.sub('^\s+', '\n', text, flags=re.MULTILINE)
+
+
+class PageContent(ElementBase):
+    pass
+
+
+class PageElement(ElementBase):
+
+    content_pattern = "/html/body//div[@id='container']"
+    title_pattern = "./div[@id='promo']//div[contains(@class,'title')]/h1"
+
+    def __init__(self, element, base_url=None):
+        ElementBase.__init__(self, element, base_url)
+        self.content_element = None
+
+    @property
+    def content(self):
+        if self.content_element is None:
+            self.content_element = ElementBase(self.find_one(self.content_pattern, name='Container element'))
+        return self.content_element
+
+    @property
+    def title(self):
+        return self.content.find_one(self.title_pattern).text.strip()
