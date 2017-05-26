@@ -44,3 +44,12 @@ class VideoTest(VGTRKTestcase):
         self.assertEquals(u'Показать еще', videos.next_page.title)
         self.assertEquals('http://tvkultura.ru/video/jsonseries/brand_id/20898/episode_id/154405/sort_by/date/page/', videos.next_page.href)
         self.assertEquals(48, len(videos.list))
+
+    def test_video_page(self):
+        actual = self.vgtrk_service.video.VideoPage(self.load_html('SingleViewType.htm'), 'https://tvkultura.ru')
+        self.assertEquals(u'Щелкунчик. XVII Международный телевизионный конкурс юных музыкантов', actual.title)
+        self.assertEquals(u'Трансляция из Концертного зала', actual.full_text[0:30])
+        self.assertEquals(u'Финал и торжественное закрытие', actual.short_text[0:30])
+        self.assertEquals('https://player.vgtrk.com/iframe/video/id/1604511/start_zoom/true/showZoomBtn/false/sid/kultura/?acc_video_id=episode_id/1438111/video_id/1552053/brand_id/60346', actual.video_iframe_href)
+        self.assertEquals('1604511', actual.video_id)
+        self.assertEquals('https://player.vgtrk.com/iframe/datavideo/id/1604511/sid/vh', actual.datavideo_href)

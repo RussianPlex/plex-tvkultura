@@ -107,3 +107,31 @@ class VideoListPage(PageElement):
         elif name not in self.view_types:
             return None
         return self.view_types[name]
+
+
+class VideoPage(PageElement):
+
+    full_text_pattern = ".//div[contains(@class,'anonse-full-text')]"
+    title_pattern = VideoListPage.title_pattern
+    video_id_regex = Regex('/video/id/(\d+)/')
+    video_iframe_href_pattern = ".//*[@id='main']//div[contains(@class,'video-player')]/iframe"
+
+    @property
+    def datavideo_href(self):
+        return self.format_url('//player.vgtrk.com/iframe/datavideo/id/%s/sid/vh' % self.video_id)
+
+    @property
+    def full_text(self):
+        return self.format_text(self.find_one(self.full_text_pattern))
+
+    @property
+    def short_text(self):
+        return self.format_text(self.find_one(self.full_text_pattern).getprevious())
+
+    @property
+    def video_id(self):
+        return self.video_id_regex.search(self.video_iframe_href).group(1)
+
+    @property
+    def video_iframe_href(self):
+        return self.format_url(self.find_one(self.video_iframe_href_pattern).get('src'))

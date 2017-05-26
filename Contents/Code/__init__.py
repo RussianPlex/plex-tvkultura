@@ -52,15 +52,17 @@ def VideoViewTypePictureMenu(url):
     return oc
 
 
-def MetadataObjectForURL(href, title, thumb, **kwargs):
+def MetadataObjectForURL(href, thumb, title, **kwargs):
     # This is a sort-of replacement for the similar method from the URL Services, just different parameters list.
+    page = SharedCodeService.vgtrk.video_page(href)
     video_clip_object = VideoClipObject(
-        key=Callback(MetadataObjectForURL, url=href, title=title, thumb=thumb, **kwargs),
+        key=Callback(MetadataObjectForURL, href=href, thumb=thumb, title=title, **kwargs),
         rating_key=href,
         title=title,
         thumb=thumb,
+        summary=page.full_text,
         items=MediaObjectsForURL(
-            Callback(RedirectToActualVideoUrl, href=href)
+            Callback(PlayVideo, href=href)
         ),
         **kwargs
     )
@@ -85,5 +87,21 @@ def MediaObjectsForURL(callback):
 
 
 @indirect
-def RedirectToActualVideoUrl(href):
-    pass
+def PlayVideo(href):
+    page = SharedCodeService.vgtrk.video_page(href)
+    json = JSON.ObjectFromURL(page.datavideo_href, headers={'Referer': page.video_iframe_href})
+    medialist = json['data']['playlist']['medialist']
+    if len(medialist) > 1:
+        raise RuntimeWarning('More than one media found, each should have been set as a PartObject!')
+    quality = str(json['data']['playlist']['priority_quality'])
+    transport = 'http'
+    if 'sources' not in medialist[0] and medialist[0]['errors']:
+        raise Ex.PlexNonCriticalError(2005, medialist[0]['errors'])
+    video_url = medialist[0]['sources'][transport][quality]
+    Log('Redirecting to video URL: %s' % video_url)
+    return IndirectResponse(
+        VideoClipObject,
+        key=video_url,
+        http_headers={'Referer': page.video_iframe_href},
+        metadata_kwargs={'summary': page.full_text}
+    )
