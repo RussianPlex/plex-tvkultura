@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from plex_test_case import PlexTestCase
+from base import VGTRKTestcase
 
 
-class BrandsTest(PlexTestCase):
+class BrandsTest(VGTRKTestcase):
 
     def test_brand_list(self):
         actual = self.vgtrk_service.brands.BrandsListPage(self.load_html('BrandList.htm'), '//tvkultura.ru')
@@ -37,15 +37,3 @@ class BrandsTest(PlexTestCase):
         self.networking.http_response_body = self.load_html('BrandFeaturedPage.htm')
         actual = self.shared_code.brand_menu('https://tvkultura.ru/brand/60346/')
         self.assertEquals('BrandPage', actual.__class__.__name__)
-
-    def load_html(self, filename):
-        html = self.get_file_contents(filename)
-        return self.environment['HTML'].ElementFromString(html)
-
-    @property
-    def shared_code(self):
-        return self.shared_code_environment['vgtrk']
-
-    @property
-    def vgtrk_service(self):
-        return self.shared_code.vgtrk_service

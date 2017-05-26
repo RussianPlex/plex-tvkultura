@@ -15,6 +15,10 @@ def brand_menu(url):
     return create_object(vgtrk_service.brands.BrandsListPage, url)
 
 
+def video_menu(url):
+    return create_object(vgtrk_service.video.VideoListPage, url)
+
+
 def create_object(ClassReference, url):
     return ClassReference(load_page(url), base_url(url))
 

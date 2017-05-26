@@ -1,0 +1,109 @@
+from base import ElementBase, LinkElement, PageElement
+
+
+class NextPageElement(LinkElement):
+
+    @property
+    def href(self):
+        return self.format_url(self.element.get('data-url'))
+
+
+class VideoElement(ElementBase):
+
+    # Not a true abstract class, can't use below line because of RestrictedPython.
+    # __metaclass__ = ABCMeta
+
+    @property
+    def title(self):
+        pass
+
+
+class ViewTypeElement(ElementBase):
+
+    # Not a true abstract class, can't use below line because of RestrictedPython.
+    # __metaclass__ = ABCMeta
+
+    container_pattern = None
+    container_element = None
+
+    @property
+    def is_available(self):
+        try:
+            self.container  # Will raise error if element not found.
+            return True
+        except KeyError:
+            return False
+
+    @property
+    def container(self):
+        if self.container_element is None:
+            element = self.find_one(self.container_pattern)
+            self.container_element = self.create_element(ElementBase, element)
+        return self.container_element
+
+    @property
+    def list(self):
+        pass
+
+
+class ViewTypePictureVideo(VideoElement):
+
+    thumb_pattern = ".//*[contains(@class,'pic')]/img"
+    title_pattern = ".//*[contains(@class,'info')]/a"
+
+    @property
+    def ajaxurl(self):
+        return self.format_url(self.find_one(self.title_pattern).get('data-ajaxurl'))
+
+    @property
+    def href(self):
+        return self.format_url(self.find_one(self.title_pattern).get('href'))
+
+    @property
+    def thumb(self):
+        thumb_url = self.find_one(self.thumb_pattern).get('data-original')
+        return self.format_url(thumb_url)
+
+    @property
+    def title(self):
+        return self.find_one(self.title_pattern).text.strip()
+
+
+class ViewTypePictureContainer(ViewTypeElement):
+
+    container_pattern = ".//*[@id='viewtype_picture']"
+    item_pattern = ".//ul[@id='items']/li[contains(@class,'item')]"
+    next_page_pattern = ".//*[@id='get_more']"
+
+    @property
+    def next_page(self):
+        element = self.find_one(self.next_page_pattern, require=False)
+        return self.create_element(NextPageElement, element) if element is not None else None
+
+    @property
+    def list(self):
+        return [self.create_element(ViewTypePictureVideo, e) for e in self.container.find_all(self.item_pattern)]
+
+
+class VideoListPage(PageElement):
+
+    title_pattern = ".//*[@id='main']//span[contains(@class,'title')]//span[@itemprop='name']"
+    view_types_list = None
+    view_type_classes = {
+        'picture': ViewTypePictureContainer
+    }
+
+    @property
+    def view_types(self):
+        if self.view_types_list is None:
+            content = self.find_one(self.content_pattern)
+            objects = {k: self.create_element(c, content) for k, c in self.view_type_classes.iteritems()}
+            self.view_types_list = {k: o for k, o in objects.iteritems() if o.is_available}
+        return self.view_types_list
+
+    def view_type(self, name):
+        if name not in self.view_type_classes:
+            raise ValueError('Invalid view type %s' % name)
+        elif name not in self.view_types:
+            return None
+        return self.view_types[name]

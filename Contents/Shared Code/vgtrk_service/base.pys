@@ -62,8 +62,15 @@ class ElementBase(object):
         return urljoin(self.base_url, uri)
 
 
-class PageContent(ElementBase):
-    pass
+class LinkElement(ElementBase):
+
+    @property
+    def href(self):
+        return self.format_url(self.element.get('href'))
+
+    @property
+    def title(self):
+        return self.format_text(self.element)
 
 
 class PageElement(ElementBase):
