@@ -1,4 +1,4 @@
-from base import ElementBase, LinkElement, PageElement
+from base import ElementBase, JSONBasedElement, LinkElement, PageElement
 
 
 class NextPageElement(LinkElement):
@@ -107,6 +107,18 @@ class VideoListPage(PageElement):
         elif name not in self.view_types:
             return None
         return self.view_types[name]
+
+
+class VideoListPaginated(JSONBasedElement, VideoListPage):
+
+    def __init__(self, json, url, base_url, page_title, next_title):
+        replace_pattern = '<ul id="items">%s</ul>'
+        if 'is_last_page' not in json or not json['is_last_page']:
+            next_page = '<a id="get_more" data-url="%s">%s</a>' % (url, next_title)
+            replace_pattern = replace_pattern + next_page
+        container = '<div id="viewtype_picture">%s</div>' % replace_pattern
+        self.html_stub = JSONBasedElement.html_stub % container
+        JSONBasedElement.__init__(self, json, url, base_url, page_title)
 
 
 class VideoPage(PageElement):

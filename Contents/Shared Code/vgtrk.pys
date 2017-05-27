@@ -1,3 +1,4 @@
+from urllib import urlencode
 from urllib2 import URLError
 from urlparse import urlparse
 import vgtrk_service
@@ -8,23 +9,31 @@ REQUEST_PAUSE = .1
 
 
 def brand_detail(url):
-    return create_object(vgtrk_service.brands.BrandPage, url)
+    return create_object_from_html(vgtrk_service.brands.BrandPage, url)
 
 
 def brand_menu(url):
-    return create_object(vgtrk_service.brands.BrandsListPage, url)
+    return create_object_from_html(vgtrk_service.brands.BrandsListPage, url)
 
 
-def video_menu(url):
-    return create_object(vgtrk_service.video.VideoListPage, url)
+def video_menu(url, page=1, referer=None, **kwargs):
+    headers = create_headers({'Referer': referer, 'X-Requested-With': 'XMLHttpRequest' if page > 1 else None})
+    if page > 1:
+        response = load_url(url + '?' + urlencode({'page': page}), headers=headers)
+        json = JSON.ObjectFromString(response)
+        return vgtrk_service.video.VideoListPaginated(json, url, base_url(url), **kwargs)
+    else:
+        return create_object_from_html(vgtrk_service.video.VideoListPage, url, headers, **kwargs)
 
 
 def video_page(url):
-    return create_object(vgtrk_service.video.VideoPage, url)
+    return create_object_from_html(vgtrk_service.video.VideoPage, url)
 
 
-def create_object(ClassReference, url):
-    return ClassReference(load_page(url), base_url(url))
+def create_object_from_html(ClassReference, url, headers={}, **kwargs):
+    response = load_url(url, headers=headers)
+    html = HTML.ElementFromString(response)
+    return ClassReference(html, base_url(url))
 
 
 def base_url(url):
@@ -32,9 +41,13 @@ def base_url(url):
     return '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
 
 
-def load_page(url, cache_time=CACHE_INTERVAL, sleep=REQUEST_PAUSE):
+def load_url(url, cache_time=CACHE_INTERVAL, headers={}, sleep=REQUEST_PAUSE):
     try:
-        return HTML.ElementFromURL(url, cacheTime=cache_time, sleep=sleep)
+        return HTTP.Request(url, cacheTime=cache_time, headers=headers, sleep=sleep).content
     except URLError, e:
         Log.Exception(str(e))
         raise Ex.MediaNotAvailable
+
+
+def create_headers(items):
+    return {k: v for k, v in items.iteritems() if v is not None}

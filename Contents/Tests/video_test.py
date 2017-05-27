@@ -45,6 +45,41 @@ class VideoTest(VGTRKTestcase):
         self.assertEquals('http://tvkultura.ru/video/jsonseries/brand_id/20898/episode_id/154405/sort_by/date/page/', videos.next_page.href)
         self.assertEquals(48, len(videos.list))
 
+    def test_video_menu_full(self):
+        self.networking.http_response_body = self.get_file_contents('AllViewTypes.htm')
+        actual = self.shared_code.video_menu('https://tvkultura.ru/video/show/')
+        self.assertEquals('VideoListPage', actual.__class__.__name__)
+
+    def test_video_menu_json(self):
+        self.networking.http_response_body = self.get_file_contents('PaginatedResponse.json')
+        actual = self.shared_code.video_menu(
+            'https://tvkultura.ru/video/jsonseries/',
+            page=2,
+            page_title=u'Культурная революция',
+            next_title=u'Показать еще',
+            referer='https://tvkultura.ru/video/show/'
+        )
+        self.assertEquals('VideoListPaginated', actual.__class__.__name__)
+        self.assertEquals(u'Культурная революция', actual.title)
+        videos = actual.view_type('picture')
+        self.assertEquals('ViewTypePictureContainer', videos.__class__.__name__)
+        self.assertEquals('NextPageElement', videos.next_page.__class__.__name__)
+        self.assertEquals(u'Показать еще', videos.next_page.title)
+        self.assertEquals('https://tvkultura.ru/video/jsonseries/', videos.next_page.href)
+        self.assertEquals(48, len(videos.list))
+
+    def test_video_menu_json_last_page(self):
+        self.networking.http_response_body = self.get_file_contents('LastPageResponse.json')
+        actual = self.shared_code.video_menu(
+            'https://tvkultura.ru/video/jsonseries/',
+            page=3,
+            page_title=u'Культурная революция',
+            next_title=u'Показать еще',
+            referer='https://tvkultura.ru/video/show/'
+        )
+        videos = actual.view_type('picture')
+        self.assertEquals(None, videos.next_page)
+
     def test_video_page(self):
         actual = self.vgtrk_service.video.VideoPage(self.load_html('SingleViewType.htm'), 'https://tvkultura.ru')
         self.assertEquals(u'Щелкунчик. XVII Международный телевизионный конкурс юных музыкантов', actual.title)

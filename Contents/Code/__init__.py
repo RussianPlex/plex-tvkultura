@@ -36,18 +36,31 @@ def BrandMenu(url):
 
 
 @route(PREFIX+'/video/viewtype-picture')
-def VideoViewTypePictureMenu(url):
-    page = SharedCodeService.vgtrk.video_menu(url)
-    videos = page.view_type('picture')
-    oc = ObjectContainer(title1=page.title)
-    for video in videos.list:
+def VideoViewTypePictureMenu(url, page=1, referer=None, page_title=None, next_title=None):
+    videos = SharedCodeService.vgtrk.video_menu(url, page=page, referer=referer, page_title=page_title, next_title=next_title)
+    video_items = videos.view_type('picture')
+    oc = ObjectContainer(title1=videos.title)
+    for video in video_items.list:
         callback = Callback(MetadataObjectForURL, href=video.href, thumb=video.thumb, title=video.title)
         oc.add(EpisodeObject(
             key=callback,
             rating_key=video.href,
             title=video.title,
             thumb=video.thumb,
-            items=MediaObjectsForURL(callback)
+            items=MediaObjectsForURL(callback),
+        ))
+    next_page = video_items.next_page
+    if next_page is not None:
+        oc.add(NextPageObject(
+            key=Callback(
+                VideoViewTypePictureMenu,
+                url=next_page.href,
+                page=int(page) + 1,
+                referer=url if referer is None else referer,
+                page_title=videos.title,
+                next_title=next_page.title
+            ),
+            title=next_page.title,
         ))
     return oc
 

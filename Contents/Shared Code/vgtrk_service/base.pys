@@ -91,3 +91,21 @@ class PageElement(ElementBase):
     @property
     def title(self):
         return self.content.find_one(self.title_pattern).text.strip()
+
+
+class JSONBasedElement(PageElement):
+
+    html_stub = u'<html><head/><body><div id="container">%s</div></body></html>'
+
+    def __init__(self, json, url, base_url, title):
+        html = self.html_stub % json['html']
+        element = HTML.ElementFromString(html.encode('utf-8'))
+        PageElement.__init__(self, element, base_url)
+        self.json = json
+        self.title_pattern = None
+        self.title_value = title
+        self.url = url
+
+    @property
+    def title(self):
+        return self.title_value
