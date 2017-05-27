@@ -19,7 +19,7 @@ class BrandsTest(VGTRKTestcase):
         self.assertEquals(u'Культурная революция', brands[39].title)
 
     def test_brand_menu(self):
-        self.networking.http_response_body = self.load_html('BrandList.htm')
+        self.networking.http_response_body = self.get_file_contents('BrandList.htm')
         actual = self.shared_code.brand_menu('https://tvkultura.ru/brand/')
         self.assertEquals('BrandsListPage', actual.__class__.__name__)
 
@@ -34,6 +34,6 @@ class BrandsTest(VGTRKTestcase):
         self.assertEquals(None, actual.video_href)
 
     def brand_detail(self):
-        self.networking.http_response_body = self.load_html('BrandFeaturedPage.htm')
+        self.networking.http_response_body = self.get_file_contents('BrandFeaturedPage.htm')
         actual = self.shared_code.brand_menu('https://tvkultura.ru/brand/60346/')
         self.assertEquals('BrandPage', actual.__class__.__name__)
