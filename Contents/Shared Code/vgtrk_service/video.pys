@@ -88,6 +88,25 @@ class ViewTypePictureVideo(VideoElement):
         return self.title_dom_element
 
 
+class ViewTypePictureVideoChild(VideoElement):
+
+    thumb_pattern = ViewTypePictureVideo.thumb_pattern
+    title_pattern = ".//a[contains(@class,'name')]"
+
+    @property
+    def href(self):
+        return self.format_url(self.find_one(self.title_pattern).get('href'))
+
+    @property
+    def thumb(self):
+        thumb_url = self.find_one(self.thumb_pattern).get('src')
+        return self.format_url(thumb_url)
+
+    @property
+    def title(self):
+        return self.find_one(self.title_pattern).text.strip()
+
+
 class ViewTypePictureContainer(ViewTypeElement):
 
     container_pattern = ".//*[@id='viewtype_picture']"
@@ -126,6 +145,18 @@ class VideoListPage(PageElement):
         elif name not in self.view_types:
             return None
         return self.view_types[name]
+
+
+class VideoListChildren(JSONBasedElement):
+
+    item_pattern = ".//ul[contains(@class, 'items')]/li[contains(@class,'item')]"
+
+    def __init__(self, json, url, base_url, page_title):
+        JSONBasedElement.__init__(self, json, url, base_url, page_title)
+
+    @property
+    def list(self):
+        return [self.create_element(ViewTypePictureVideoChild, e) for e in self.content.find_all(self.item_pattern)]
 
 
 class VideoListPaginated(JSONBasedElement, VideoListPage):

@@ -56,6 +56,24 @@ class VideoTest(VGTRKTestcase):
         self.assertEquals('http://tvkultura.ru/video/jsonseries/brand_id/20898/episode_id/154405/sort_by/date/page/', videos.next_page.href)
         self.assertEquals(48, len(videos.list))
 
+    def test_video_children(self):
+        self.networking.http_response_body = self.get_file_contents('VideoItemChildren.json')
+        actual = self.shared_code.video_children(
+            'https://tvkultura.ru/video/jsonvideo/',
+            page_title=u'По закону',
+            referer='https://tvkultura.ru/video/show/'
+        )
+        self.assertEquals('VideoListChildren', actual.__class__.__name__)
+        videos_list = actual.list
+        self.assertEquals(2, len(videos_list))
+        self.assertEquals('ViewTypePictureVideoChild', videos_list[0].__class__.__name__)
+        self.assertEquals('https://tvkultura.ru/video/show/brand_id/23843/episode_id/1487314/video_id/1618914/viewtype/picture/', videos_list[0].href)
+        self.assertEquals('https://tvkultura.ru/video/show/brand_id/23843/episode_id/1487314/video_id/1618974/viewtype/picture/', videos_list[1].href)
+        self.assertEquals('https://cdn-st1.rtr-vesti.ru/vh/pictures/lgs/132/542/1.jpg', videos_list[0].thumb)
+        self.assertEquals('https://cdn-st2.rtr-vesti.ru/vh/pictures/lgs/132/532/7.jpg', videos_list[1].thumb)
+        self.assertEquals(u'По закону', videos_list[0].title)
+        self.assertEquals(u'О Владимире Фогеле', videos_list[1].title)
+
     def test_video_menu_full(self):
         self.networking.http_response_body = self.get_file_contents('AllViewTypes.htm')
         actual = self.shared_code.video_menu('https://tvkultura.ru/video/show/')

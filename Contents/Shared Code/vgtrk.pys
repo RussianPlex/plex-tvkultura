@@ -16,6 +16,13 @@ def brand_menu(url):
     return create_object_from_html(vgtrk_service.brands.BrandsListPage, url)
 
 
+def video_children(url, referer, **kwargs):
+    headers = create_headers({'Referer': referer, 'X-Requested-With': 'XMLHttpRequest'})
+    response = load_url(url, headers=headers)
+    json = JSON.ObjectFromString(response)
+    return vgtrk_service.video.VideoListChildren(json, url, base_url(url), **kwargs)
+
+
 def video_menu(url, page=1, referer=None, **kwargs):
     headers = create_headers({'Referer': referer, 'X-Requested-With': 'XMLHttpRequest' if page > 1 else None})
     if page > 1:

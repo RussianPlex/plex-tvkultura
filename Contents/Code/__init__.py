@@ -58,7 +58,22 @@ def VideoViewTypePictureMenu(url, page=1, referer=None, page_title=None, next_ti
     return oc
 
 
+@route(PREFIX+'/video/viewtype-picture/children')
+def VideoViewTypePictureChildren(url, referer=None, page_title=None):
+    video_items = SharedCodeService.vgtrk.video_children(url, referer=referer, page_title=page_title)
+    oc = ObjectContainer(title1=page_title)
+    for video in video_items.list:
+        oc.add(EpisodeObjectForItem(video))
+    return oc
+
+
 def MetadataRecordForItem(video):
+    if video.has_children:
+        return DirectoryObject(
+            key=Callback(VideoViewTypePictureChildren, url=video.ajaxurl, referer=video.href, page_title=video.title),
+            title=video.title,
+            thumb=video.thumb,
+        )
     return EpisodeObjectForItem(video)
 
 
