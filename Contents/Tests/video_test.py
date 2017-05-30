@@ -31,9 +31,20 @@ class VideoTest(VGTRKTestcase):
         self.assertEquals(27, len(videos_list))
         self.assertEquals(u'Торжественное закрытие. Прямая трансляция', videos_list[0].title)
         self.assertEquals(u'Приглашение к участию', videos_list[26].title)
+        self.assertEquals(False, videos_list[26].has_children)
         self.assertEquals('https://cdn-st3.rtr-vesti.ru/vh/pictures/md/105/205/4.jpg', videos_list[26].thumb)
         self.assertEquals('https://tvkultura.ru/video/show/brand_id/60346/episode_id/1334953/video_id/1522871/viewtype/picture/', videos_list[26].href)
         self.assertEquals('https://tvkultura.ru/video/jsonvideo/episode_id/1334953/video_id/1552053/', videos_list[26].ajaxurl)
+
+    def test_picture_view_type_has_children(self):
+        actual = self.vgtrk_service.video.VideoListPage(self.load_html('HasChildren.htm'), 'https://tvkultura.ru')
+        self.assertEquals(u'Шедевры старого кино', actual.title)
+        videos = actual.view_type('picture')
+        self.assertEquals('ViewTypePictureContainer', videos.__class__.__name__)
+        videos_list = videos.list
+        self.assertEquals(48, len(videos_list))
+        self.assertEquals(u'Поручик Киже', videos_list[23].title)
+        self.assertEquals(True, videos_list[23].has_children)
 
     def test_picture_view_type_pagination(self):
         actual = self.vgtrk_service.video.VideoListPage(self.load_html('AllViewTypes.htm'), 'http://tvkultura.ru')

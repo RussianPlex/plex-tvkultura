@@ -14,6 +14,14 @@ class VideoElement(ElementBase):
     # __metaclass__ = ABCMeta
 
     @property
+    def href(self):
+        pass
+
+    @property
+    def thumb(self):
+        pass
+
+    @property
     def title(self):
         pass
 
@@ -49,6 +57,7 @@ class ViewTypeElement(ElementBase):
 class ViewTypePictureVideo(VideoElement):
 
     thumb_pattern = ".//*[contains(@class,'pic')]/img"
+    title_dom_element = None
     title_pattern = ".//*[contains(@class,'info')]/a"
 
     @property
@@ -56,8 +65,12 @@ class ViewTypePictureVideo(VideoElement):
         return self.format_url(self.find_one(self.title_pattern).get('data-ajaxurl'))
 
     @property
+    def has_children(self):
+        return 'with-children' in self.title_element.get('class')
+
+    @property
     def href(self):
-        return self.format_url(self.find_one(self.title_pattern).get('href'))
+        return self.format_url(self.title_element.get('href'))
 
     @property
     def thumb(self):
@@ -66,7 +79,13 @@ class ViewTypePictureVideo(VideoElement):
 
     @property
     def title(self):
-        return self.find_one(self.title_pattern).text.strip()
+        return self.title_element.text.strip()
+
+    @property
+    def title_element(self):
+        if self.title_dom_element is None:
+            self.title_dom_element = self.find_one(self.title_pattern)
+        return self.title_dom_element
 
 
 class ViewTypePictureContainer(ViewTypeElement):

@@ -41,14 +41,7 @@ def VideoViewTypePictureMenu(url, page=1, referer=None, page_title=None, next_ti
     video_items = videos.view_type('picture')
     oc = ObjectContainer(title1=videos.title)
     for video in video_items.list:
-        callback = Callback(MetadataObjectForURL, href=video.href, thumb=video.thumb, title=video.title)
-        oc.add(EpisodeObject(
-            key=callback,
-            rating_key=video.href,
-            title=video.title,
-            thumb=video.thumb,
-            items=MediaObjectsForURL(callback),
-        ))
+        oc.add(MetadataRecordForItem(video))
     next_page = video_items.next_page
     if next_page is not None:
         oc.add(NextPageObject(
@@ -63,6 +56,21 @@ def VideoViewTypePictureMenu(url, page=1, referer=None, page_title=None, next_ti
             title=next_page.title,
         ))
     return oc
+
+
+def MetadataRecordForItem(video):
+    return EpisodeObjectForItem(video)
+
+
+def EpisodeObjectForItem(video):
+    callback = Callback(MetadataObjectForURL, href=video.href, thumb=video.thumb, title=video.title)
+    return EpisodeObject(
+        key=callback,
+        rating_key=video.href,
+        title=video.title,
+        thumb=video.thumb,
+        items=MediaObjectsForURL(callback),
+    )
 
 
 def MetadataObjectForURL(href, thumb, title, **kwargs):
