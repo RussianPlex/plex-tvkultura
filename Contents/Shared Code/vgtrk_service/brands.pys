@@ -12,7 +12,7 @@ class BrandElement(ElementBase):
 
     @property
     def about(self):
-        return self.find_one(self.about_pattern).text.strip()
+        return (self.find_one(self.about_pattern).text or '').strip()
 
     @property
     def big_thumb(self):
